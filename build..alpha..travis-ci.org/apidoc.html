@@ -1,0 +1,450 @@
+<div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a
+
+        href="https://github.com/gruntjs/grunt-contrib-jasmine#readme"
+
+    >grunt-contrib-jasmine (v1.1.0)</a>
+</h1>
+<h4>Run jasmine specs headlessly through PhantomJS</h4>
+<div class="apidocSectionDiv"><a
+    href="#apidoc.tableOfContents"
+    id="apidoc.tableOfContents"
+><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.grunt-contrib-jasmine">module grunt-contrib-jasmine</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.grunt-contrib-jasmine.grunt-contrib-jasmine">
+            function <span class="apidocSignatureSpan"></span>grunt-contrib-jasmine
+            <span class="apidocSignatureSpan">(grunt)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <span class="apidocSignatureSpan">object <span class="apidocSignatureSpan">grunt-contrib-jasmine.</span>jasmine</span>
+
+        </li>
+
+    </ol></li>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.grunt-contrib-jasmine.jasmine">module grunt-contrib-jasmine.jasmine</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.grunt-contrib-jasmine.jasmine.init">
+            function <span class="apidocSignatureSpan">grunt-contrib-jasmine.jasmine.</span>init
+            <span class="apidocSignatureSpan">(grunt, phantomjs)</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.grunt-contrib-jasmine" id="apidoc.module.grunt-contrib-jasmine">module grunt-contrib-jasmine</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.grunt-contrib-jasmine.grunt-contrib-jasmine" id="apidoc.element.grunt-contrib-jasmine.grunt-contrib-jasmine">
+        function <span class="apidocSignatureSpan"></span>grunt-contrib-jasmine
+        <span class="apidocSignatureSpan">(grunt)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">grunt-contrib-jasmine = function (grunt) {
+
+  // node api
+  var fs = require(&#x27;fs&#x27;),
+      path = require(&#x27;path&#x27;),
+      sprintf = require(&#x27;sprintf-js&#x27;).sprintf;
+
+  // npm lib
+  var phantomjs = require(&#x27;grunt-lib-phantomjs&#x27;).init(grunt),
+      chalk = require(&#x27;chalk&#x27;),
+      _ = require(&#x27;lodash&#x27;);
+
+  // local lib
+  var jasmine = require(&#x27;./lib/jasmine&#x27;).init(grunt, phantomjs);
+
+  var junitTemplate = path.join(__dirname, &#x27;/jasmine/templates/JUnit.tmpl&#x27;);
+
+  var status = {};
+
+  var symbols = {
+    none: {
+      check: &#x27;&#x27;,
+      error: &#x27;&#x27;,
+      splat: &#x27;&#x27;
+    },
+    short: {
+      check: &#x27;.&#x27;,
+      error: &#x27;X&#x27;,
+      splat: &#x27;*&#x27;
+    },
+    full: {
+      check: &#x27;✓&#x27;,
+      error: &#x27;X&#x27;,
+      splat: &#x27;*&#x27;
+    }
+  };
+
+  // With node.js on Windows: use symbols available in terminal default fonts
+  // https://github.com/visionmedia/mocha/pull/641
+  if (process &#x26;&#x26; process.platform === &#x27;win32&#x27;) {
+    symbols = {
+      none: {
+        check: &#x27;&#x27;,
+        error: &#x27;&#x27;,
+        splat: &#x27;&#x27;
+      },
+      short: {
+        check: &#x27;.&#x27;,
+        error: &#x27;\u00D7&#x27;,
+        splat: &#x27;*&#x27;
+      },
+      full: {
+        check: &#x27;\u221A&#x27;,
+        error: &#x27;\u00D7&#x27;,
+        splat: &#x27;*&#x27;
+      }
+    };
+  }
+
+  grunt.registerMultiTask(&#x27;jasmine&#x27;, &#x27;Run Jasmine specs headlessly through PhantomJS.&#x27;, function() {
+
+    // Merge task-specific options with these defaults.
+    var options = this.options({
+      version: &#x27;2.2.0&#x27;,
+      timeout: 10000,
+      styles: [],
+      specs: [],
+      helpers: [],
+      vendor: [],
+      polyfills: [],
+      customBootFile: null,
+      tempDir: &#x27;.grunt/grunt-contrib-jasmine&#x27;,
+      outfile: &#x27;_SpecRunner.html&#x27;,
+      host: &#x27;&#x27;,
+      template: path.join(__dirname, &#x27;/jasmine/templates/DefaultRunner.tmpl&#x27;),
+      templateOptions: {},
+      junit: {},
+      ignoreEmpty: grunt.option(&#x27;force&#x27;) === true,
+      display: &#x27;full&#x27;,
+      summary: false
+    });
+
+    if (grunt.option(&#x27;debug&#x27;)) {
+      grunt.log.debug(options);
+    }
+
+    setup(options);
+
+    // The filter returned no spec files so skip phantom.
+    if (!jasmine.buildSpecrunner(this.filesSrc, options)) {
+      return removePhantomListeners();
+    }
+
+    // If we&#x27;re just building (e.g. for web), skip phantom.
+    if (this.flags.build) {
+      removePhantomListeners();
+      return;
+    }
+
+    var done = this.async();
+    phantomRunner(options, function(err, status) {
+      var success = !err &#x26;&#x26; status.failed === 0;
+
+      if (err) {
+        grunt.log.error(err);
+      }
+      if (status.failed === 0) {
+        grunt.log.ok(&#x27;0 failures&#x27;);
+      } else {
+        grunt.log.error(status.failed + &#x27; failures&#x27;);
+      }
+
+      teardown(options, function() {
+        done(success);
+      });
+    });
+
+  });
+
+  function phantomRunner(options, cb) {
+    var file = options.outfile;
+
+    if (options.host) {
+      if (!(/\/$/).test(options.host)) {
+        options.host += &#x27;/&#x27;;
+      }
+      file = options.host + options.outfile;
+    }
+
+    grunt.verbose.subhead(&#x27;Testing Jasmine specs via PhantomJS&#x27;).or.writeln(&#x27;Testing Jasmine specs via PhantomJS&#x27;);
+    grunt.log.writeln(&#x27;&#x27;);
+
+    phantomjs.spawn(file, {
+      failCode: 90,
+      options: options,
+      done: function(err) {
+        cb(err, status);
+      }
+    });
+  }
+
+  function teardown(options, cb) {
+    removePhantomListeners();
+
+    if (!options.keepRunner &#x26;&#x26; fs.statSync(options.outfile).isFile()) {
+      fs.unlink(options.outfile);
+    }
+
+    if (!options.keepRunner) {
+      jasmine.cleanTemp(options.tempDir, cb);
+    } else {
+      cb();
+    }
+  }
+
+  function removePhantomListeners() {
+    phantomjs.removeAllListeners();
+    phantomjs.listenersAny().length = 0;
+  }
+
+  function setup(options) {
+    var indentLevel = 1,
+        tabstop = 2,
+        thisRun = {},
+        suites = {},
+        currentSuite;
+
+    status = {
+      failed: 0
+    };
+
+    function indent(times) {
+      return new Array(+times * tabstop).join(&#x27; &#x27;);
+    }
+
+    phantomjs.on(&#x27;fail.load&#x27;, function() {
+      grunt.log.writeln();
+      grunt.warn(&#x27;PhantomJS failed to load your page.&#x27;, 90);
+    });
+
+    phantomjs.on(&#x27;fail.timeout&#x27;, function() {
+      grunt.log.writeln();
+      grunt.warn(&#x27;PhantomJS timed ...</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+
+</div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.grunt-contrib-jasmine.jasmine" id="apidoc.module.grunt-contrib-jasmine.jasmine">module grunt-contrib-jasmine.jasmine</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.grunt-contrib-jasmine.jasmine.init" id="apidoc.element.grunt-contrib-jasmine.jasmine.init">
+        function <span class="apidocSignatureSpan">grunt-contrib-jasmine.jasmine.</span>init
+        <span class="apidocSignatureSpan">(grunt, phantomjs)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">init = function (grunt, phantomjs) {
+  // node api
+  var fs = require(&#x27;fs&#x27;),
+      path = require(&#x27;path&#x27;);
+
+  // npm
+  var rimraf = require(&#x27;rimraf&#x27;),
+      _ = require(&#x27;lodash&#x27;),
+      jasmineRequire = require(&#x27;jasmine-core&#x27;);
+
+  var baseDir = &#x27;.&#x27;;
+
+  var exports = {};
+
+  exports.writeTempFile = function(dest, contents) {
+    grunt.file.write(dest, contents);
+  };
+
+  exports.copyTempFile = function(src, dest) {
+    grunt.file.copy(src, dest);
+  };
+
+  exports.cleanTemp = function(tempDir, cb) {
+    rimraf(tempDir, function() {
+      if(tempDir === &#x27;.grunt/grunt-contrib-jasmine&#x27;) {
+        // if this fails, then ./.grunt isn&#x27;t empty and that&#x27;s ok.
+        fs.rmdir(&#x27;.grunt&#x27;, cb);
+      } else {
+        // don&#x27;t delete parent directory of a custom directory.
+        cb();
+      }
+    });
+  };
+
+  exports.buildSpecrunner = function(src, options) {
+    var source = &#x27;&#x27;,
+      tempDir = options.tempDir,
+      outfile = options.outfile,
+      specrunner = path.join(baseDir, outfile),
+      outdir = path.dirname(outfile),
+      gruntfilter = grunt.option(&#x27;filter&#x27;),
+      filteredSpecs = exports.getRelativeFileList(outdir, options.specs);
+
+    // Let&#x27;s filter through the spec files here,
+    // there&#x27;s no need to go on if no specs matches
+    if (gruntfilter) {
+      filteredSpecs = specFilter(gruntfilter, filteredSpecs);
+
+      if (filteredSpecs.length === 0) {
+        grunt.log.warn(&#x27;the --filter flag did not match any spec within &#x27; + grunt.task.current.target);
+        return null;
+      }
+    }
+
+    exports.copyTempFile(path.join(__dirname, &#x27;/../jasmine/reporters/PhantomReporter.js&#x27;), path.join(tempDir, &#x27;reporter.js&#x27;));
+
+    [].concat(jasmineRequire.files.cssFiles, jasmineRequire.files.jsFiles).forEach(function(name) {
+      var srcPath = path.join(jasmineRequire.files.path, name);
+      exports.copyTempFile(srcPath, path.join(tempDir, name));
+    });
+
+    jasmineRequire.files.bootFiles.forEach(function(name) {
+      var srcPath = path.join(jasmineRequire.files.bootDir, name);
+      exports.copyTempFile(srcPath, path.join(tempDir, name));
+    });
+
+    exports.copyTempFile(path.join(jasmineRequire.files.imagesDir, &#x27;jasmine_favicon.png&#x27;), path.join(tempDir, &#x27;jasmine_favicon.png
+&#x27;));
+
+    var reporters = [
+      tempDir + &#x27;/reporter.js&#x27;
+    ];
+
+    var jasmineCss = jasmineRequire.files.cssFiles.map(function(name) {
+      return path.join(tempDir, name);
+    });
+
+    jasmineCss = jasmineCss.concat(options.styles);
+
+    var polyfills = [].concat(options.polyfills);
+
+    var jasmineCore = jasmineRequire.files.jsFiles.map(function(name) {
+      return path.join(tempDir, name);
+    });
+
+    var bootFile = tempDir + &#x27;/boot.js&#x27;;
+
+    if (options.customBootFile !== null) {
+      bootFile = options.customBootFile;
+    }
+
+    var context = {
+      temp: tempDir,
+      outfile: outfile,
+      favicon: path.join(tempDir, &#x27;jasmine_favicon.png&#x27;),
+      css: exports.getRelativeFileList(outdir, jasmineCss, { nonull: true }),
+      scripts: {
+        polyfills: exports.getRelativeFileList(outdir, polyfills),
+        jasmine: exports.getRelativeFileList(outdir, jasmineCore),
+        helpers: exports.getRelativeFileList(outdir, options.helpers, { nonull: true }),
+        specs: filteredSpecs,
+        src: exports.getRelativeFileList(outdir, src, { nonull: true }),
+        vendor: exports.getRelativeFileList(outdir, options.vendor, { nonull: true }),
+        reporters: exports.getRelativeFileList(outdir, reporters),
+        boot: exports.getRelativeFileList(outdir, bootFile)
+      },
+      options: options.templateOptions || {}
+    };
+
+    if (options.template.process) {
+      var task = {
+        writeTempFile: exports.writeTempFile,
+        copyTempFile: exports.copyTempFile,
+        phantomjs: phantomjs
+      };
+      source = options.template.process(grunt, task, context);
+      grunt.file.write(specrunner, source);
+    } else {
+      grunt.file.copy(options.template, specrunner, {
+        process: function(src) {
+          source = _.template(src, context);
+          return source;
+        }
+      });
+    }
+
+    return source;
+  };
+
+  exports.getRelati ...</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
